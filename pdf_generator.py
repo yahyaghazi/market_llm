@@ -467,20 +467,42 @@ class PDFReportGenerator:
                 self.style_manager.get_style('SubSection')
             ))
             
+            # Fonction pour limiter la longueur du texte
+            def truncate_text(items, max_length=65):
+                """Tronque le texte trop long pour tenir dans le tableau"""
+                truncated = []
+                for item in items:
+                    if len(item) > max_length:
+                        # Couper intelligemment
+                        cut_pos = item[:max_length].rfind(' ')
+                        if cut_pos > max_length - 10:  # Si on coupe pas trop tôt
+                            truncated.append(item[:cut_pos] + '...')
+                        else:
+                            truncated.append(item[:max_length] + '...')
+                    else:
+                        truncated.append(item)
+                return truncated
+            
+            # Tronquer les items trop longs
+            strengths_clean = truncate_text(product.strengths)
+            weaknesses_clean = truncate_text(product.weaknesses)
+            opportunities_clean = truncate_text(product.opportunities)
+            threats_clean = truncate_text(product.threats)
+            
             swot_data = [
                 ['FORCES', 'FAIBLESSES'],
                 [
-                    '\n'.join([f"• {s}" for s in product.strengths]),
-                    '\n'.join([f"• {w}" for w in product.weaknesses])
+                    '\n'.join([f"• {s}" for s in strengths_clean]),
+                    '\n'.join([f"• {w}" for w in weaknesses_clean])
                 ],
                 ['OPPORTUNITÉS', 'MENACES'],
                 [
-                    '\n'.join([f"• {o}" for o in product.opportunities]),
-                    '\n'.join([f"• {t}" for t in product.threats])
+                    '\n'.join([f"• {o}" for o in opportunities_clean]),
+                    '\n'.join([f"• {t}" for t in threats_clean])
                 ]
             ]
             
-            swot_table = Table(swot_data, colWidths=[3*inch, 3*inch])
+            swot_table = Table(swot_data, colWidths=[2.9*inch, 2.9*inch])
             swot_table.setStyle(self.table_factory.create_swot_table_style())
             
             story.append(swot_table)
